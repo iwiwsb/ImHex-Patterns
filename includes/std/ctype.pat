@@ -5,7 +5,7 @@
     of ASCII characters.
 */
 
-namespace std::ctype {
+namespace auto std::ctype {
 
     /**
         Checks if the given character `c` is a digit between '0' and '9'
@@ -85,7 +85,7 @@ namespace std::ctype {
         @return True if `c` is part of this range, false otherwise
     */
     fn isprint(char c) {
-        return c >= '0' && c <= '~';
+        return c >= ' ' && c <= '~';
     };
 
     /**

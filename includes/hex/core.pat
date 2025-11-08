@@ -1,12 +1,12 @@
 #pragma once
 
-#include <hex/impl/imhex_check.pat>
+import hex.impl.imhex_check;
 
 /*!
     Core intrinsic functions to interact with the ImHex Hex Editor
 */
 
-namespace hex::core {
+namespace auto hex::core {
 
     /**
         A type representing a selection in the hex editor
@@ -21,20 +21,30 @@ namespace hex::core {
         @return The current selection
     */
     fn get_selection() {
-        u128 result = builtin::hex::core::get_selection();
+        u128 selection = builtin::hex::core::get_selection();
 
         Selection result;
-        if (result == u128(-1)) {
+        if (selection == u128(-1)) {
             result.valid    = false;
             result.address  = 0x00;
             result.size     = 0x00;
         } else {
             result.valid    = true;
-            result.address  = result >> 64;
-            result.size     = result & u64(-1);
+            result.address  = selection >> 64;
+            result.size     = selection & u64(-1);
         }
 
         return result;
+    };
+
+    /**
+        Add a file to the Virtual Filesystem
+        @param path The name of the file
+        @param pattern The pattern associated with the file
+    */
+    fn add_virtual_file(str path, auto pattern)
+    {
+        builtin::hex::core::add_virtual_file(path, pattern);
     };
 
 }

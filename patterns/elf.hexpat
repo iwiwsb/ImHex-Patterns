@@ -1,12 +1,16 @@
+#pragma author WerWolv
+#pragma description Executable and Linkable Format executable (ELF)
+
 #pragma MIME application/x-executable
 #pragma MIME application/x-elf
 #pragma MIME application/x-coredump
 #pragma MIME application/x-object
 #pragma MIME application/x-sharedlib
 
-#include <std/core.pat>
-#include <std/io.pat>
-#include <std/mem.pat>
+import std.core;
+import std.io;
+import std.mem;
+import type.magic;
 
 using BitfieldOrder = std::core::BitfieldOrder;
 
@@ -493,14 +497,15 @@ bitfield SHF {
 };
 
 bitfield ELF32_R_INFO {
-    SYM  : 8;
-    TYPE : 8;
-} [[left_to_right]];
+    TYPE    : 8;
+    SYM     : 8;
+    padding : 16;
+} [[bitfield_order(BitfieldOrder::LeastToMostSignificant, 32)]];
 
 bitfield ELF64_R_INFO {
-    SYM  : 32;
     TYPE : 32;
-} [[left_to_right]];
+    SYM  : 32;
+} [[bitfield_order(BitfieldOrder::LeastToMostSignificant, 64)]];
 
 bitfield PF {
     X        : 1;
@@ -512,7 +517,7 @@ bitfield PF {
 };
 
 struct E_IDENT {
-    char EI_MAG[4];
+    type::Magic<"\x7fELF"> EI_MAG;
     EI_CLASS EI_CLASS;
     EI_DATA EI_DATA;
     EI_VERSION EI_VERSION;
@@ -562,7 +567,7 @@ struct Elf32_Phdr {
     Elf32_Word p_memsz;
     PF p_flags;
     Elf32_Word p_align;
-    
+
     if (p_offset >= 0 && p_filesz > 0 && (p_offset + p_filesz) <= std::mem::size() && p_filesz <= std::mem::size())
         u8 p_data[p_filesz] @ p_offset [[sealed]];
 };
@@ -576,7 +581,7 @@ struct Elf64_Phdr {
     Elf64_Xword p_filesz;
     Elf64_Xword p_memsz;
     Elf64_Xword p_align;
-    
+
     if (p_offset >= 0 && p_filesz > 0 && (p_offset + p_filesz) <= std::mem::size() && p_filesz <= std::mem::size())
         u8 p_data[p_filesz] @ p_offset [[sealed]];
 };
@@ -633,22 +638,25 @@ struct Elf32_Shdr {
     Elf32_Word sh_info;
     Elf32_Word sh_addralign;
     Elf32_Word sh_entsize;
-    
+
     if (sh_size > 0 && sh_offset + sh_size < std::mem::size()) {
     	if (sh_type == SHT::NOBITS || sh_type == SHT::NULL) {
 		// Section has no data
 		} else if (sh_type == SHT::STRTAB) {
 			String stringTable[while($ < (sh_offset + sh_size))] @ sh_offset;
-			stringTableIndex = std::core::array_index();	
 		} else if (sh_type == SHT::SYMTAB || sh_type == SHT::DYNSYM) {
 			Elf32_Sym symbolTable[sh_size / sh_entsize] @ sh_offset;
+		} else if (sh_type == SHT::REL) {
+			Elf32_Rel relTable[sh_size / sh_entsize] @ sh_offset;
+		} else if (sh_type == SHT::RELA) {
+			Elf32_Rela relaTable[sh_size / sh_entsize] @ sh_offset;
 		} else if (sh_type == SHT::INIT_ARRAY || sh_type == SHT::FINI_ARRAY) {
 			u32 pointer[while($ < (sh_offset + sh_size))] @ sh_offset;
 		} else {
 			u8 data[sh_size] @ sh_offset [[sealed]];
 		}
     }
-} [[format("format_section_header")]];;
+} [[format("format_section_header")]];
 
 struct Elf64_Chdr {
     u32 ch_type;
@@ -693,15 +701,18 @@ struct Elf64_Shdr {
     Elf64_Word sh_info;
     Elf64_Xword sh_addralign;
     Elf64_Xword sh_entsize;
-    
+
     if (sh_size > 0 && sh_offset + sh_size < std::mem::size()) {
     	if (sh_type == SHT::NOBITS || sh_type == SHT::NULL) {
 			// Section has no data
 		} else if (sh_type == SHT::STRTAB) {
 			String stringTable[while($ < (sh_offset + sh_size))] @ sh_offset;
-			stringTableIndex = std::core::array_index();	
 		} else if (sh_type == SHT::SYMTAB || sh_type == SHT::DYNSYM) {
 			Elf64_Sym symbolTable[sh_size / sh_entsize] @ sh_offset;
+		} else if (sh_type == SHT::REL) {
+			Elf64_Rel relTable[sh_size / sh_entsize] @ sh_offset;
+		} else if (sh_type == SHT::RELA) {
+			Elf64_Rela relaTable[sh_size / sh_entsize] @ sh_offset;
 		} else if (sh_type == SHT::INIT_ARRAY || sh_type == SHT::FINI_ARRAY) {
 			u32 pointer[while($ < (sh_offset + sh_size))] @ sh_offset;
 		} else {
@@ -712,7 +723,7 @@ struct Elf64_Shdr {
 
 fn format_section_header(auto shdr) {
 	u32 i = 0;
-	
+
 	u32 nameAddress = addressof(elf.shdr[stringTableIndex].stringTable) + shdr.sh_name;
 	String string @ nameAddress;
 
@@ -722,25 +733,32 @@ fn format_section_header(auto shdr) {
 
 struct ELF {
 	E_IDENT e_ident;
-	
+
 	if (e_ident.EI_DATA == EI_DATA::ELFDATA2LSB)
 		std::core::set_endian(std::mem::Endian::Little);
 	else
 		std::core::set_endian(std::mem::Endian::Big);
-	
+
 	if (e_ident.EI_CLASS == EI_CLASS::ELFCLASS32) {
 		Elf32_Ehdr ehdr;
+		stringTableIndex = ehdr.e_shstrndx;
 		Elf32_Phdr phdr[ehdr.e_phnum] @ ehdr.e_phoff;
 		Elf32_Shdr shdr[ehdr.e_shnum] @ ehdr.e_shoff;
 	} else if (e_ident.EI_CLASS == EI_CLASS::ELFCLASS64) {
 		Elf64_Ehdr ehdr;
+		stringTableIndex = ehdr.e_shstrndx;
 		Elf64_Phdr phdr[ehdr.e_phnum] @ ehdr.e_phoff;
 		Elf64_Shdr shdr[ehdr.e_shnum] @ ehdr.e_shoff;
 	}
 };
 
 ELF elf @ 0x00;
-
+EI_DATA endian @ 0x05 [[hidden]];
+match (endian) {
+    (EI_DATA::ELFDATA2LSB): std::core::set_endian(std::mem::Endian::Little);
+    (EI_DATA::ELFDATA2MSB): std::core::set_endian(std::mem::Endian::Big);
+    (_): std::core::set_endian(std::mem::Endian::Native);
+}
 
 fn gen_shdr_disp_name(ref auto pattern, str member_name, u8 member_index) {
     return std::format(

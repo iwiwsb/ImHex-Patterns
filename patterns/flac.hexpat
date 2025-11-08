@@ -1,6 +1,10 @@
-#include <std/sys.pat>
-#include <std/core.pat>
-#include <std/io.pat>
+#pragma author WerWolv
+#pragma description Free Lossless Audio Codec, FLAC Audio Format
+#pragma MIME audio/flac
+
+import std.sys;
+import std.core;
+import std.io;
 
 #pragma endian big
 
@@ -19,7 +23,7 @@ enum BLOCK_TYPE : u8 {
 	VORBIS_COMMENT = 4,
 	CUESHEET = 5,
 	PICTURE = 6,
-	
+
 	INVALID = 127
 };
 
@@ -45,7 +49,7 @@ struct METADATA_BLOCK_STREAMINFO {
 	u24 minFrameSize, maxFrameSize;
 	STREAMINFO_FLAGS flags;
 	u128 md5Signature;
-	
+
 	bitsPerSample = flags.bitsPerSample;
 };
 
@@ -76,7 +80,7 @@ struct VORBIS_USER_COMMENT {
 struct METADATA_BLOCK_VORBIS_COMMENT {
 	le u32 vendorLength;
 	u8 vendor[vendorLength];
-	
+
 	le u32 userCommentListLength;
 	VORBIS_USER_COMMENT userCommentList[userCommentListLength];
 };
@@ -165,24 +169,24 @@ bitfield FRAME_HEADER_FLAGS {
 
 struct FRAME_HEADER {
 	FRAME_HEADER_FLAGS flags;
-	
+
 	sampleSize = flags.sampleSize;
-	
+
 	if (flags.blockingStrategy)
 		char16 sampleNumber[7];
 	else
 		char16 frameNumber[6];
-	
+
 	if (flags.blockSize == 0b0110)
 		u8 blockSize;
 	else if (flags.blockSize == 0b0111)
 		u16 blockSize;
-		
+
 	if (flags.sampleRate == 0b1100)
 		u8 sampleRate;
 	else if (flags.sampleRate == 0b1101 || flags.sampleRate == 0b1110)
 		u16 sampleRate;
-		
+
 	u8 crc8;
 };
 
@@ -245,8 +249,8 @@ struct RESIDUAL {
 		RESIDUAL_CODING_METHOD_PARTITIONED_RICE rice;
 	else if (parent.value.codingMethod == 0b01)
 		RESIDUAL_CODING_METHOD_PARTITIONED_RICE2 rice;
-		
-		
+
+
 	if ((parent.parent.header.type & 0b111) == 0b000)
 		u8 samples[(getBitsPerSample() * (parent.parent.parent.header.flags.blockSize - (parent.parent.header.type & 0b111))) / 8];
 	else if (std::core::array_index() != 0)
@@ -275,7 +279,7 @@ struct SUBFRAME_LPC {
 
 struct SUBFRAME {
 	SUBFRAME_HEADER header;
-	
+
 	if (header.type == 0b00000)
 		SUBFRAME_CONSTANT constant;
 	else if (header.type == 0b000001)
@@ -297,13 +301,15 @@ struct METADATA_BLOCK {
 	METADATA_BLOCK_HEADER header;
 	if (header.lastMetadataBlock)
 		break;
-	
+
 	if (header.blockType == BLOCK_TYPE::STREAMINFO)
 		METADATA_BLOCK_STREAMINFO data;
 	else if (header.blockType == BLOCK_TYPE::PADDING)
 		METADATA_BLOCK_PADDING data;
 	else if (header.blockType == BLOCK_TYPE::APPLICATION)
 		METADATA_BLOCK_APPLICATION data;
+	else if (header.blockType == BLOCK_TYPE::SEEKTABLE)
+	     METADATA_BLOCK_SEEKTABLE data;
 	else if (header.blockType == BLOCK_TYPE::VORBIS_COMMENT)
 		METADATA_BLOCK_VORBIS_COMMENT data;
 	else if (header.blockType == BLOCK_TYPE::CUESHEET)

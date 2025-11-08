@@ -1,8 +1,10 @@
-#include <std/sys.pat>
-#include <std/mem.pat>
+#pragma description Mechanized Assault and Exploration v1.04 (strategy game) save
 
-#pragma array_limit 12544
-#pragma pattern_limit 2000000
+import std.sys;
+import std.mem;
+
+#pragma array_limit 0
+#pragma pattern_limit 0
 #pragma eval_depth 32
 
 enum FileType : u8
@@ -286,7 +288,7 @@ struct UnitValues
 struct Complex
 {
   u16 object_index;
-  
+
   if(CheckObjectId(object_index, true) == true)
   {
     u16 class_type;
@@ -459,11 +461,11 @@ struct PathStep
 struct Path
 {
   u16 object_index;
-  
+
   if(CheckObjectId(object_index, true) == true)
   {
     u16 class_type;
-    
+
     // Air path
     if (class_type == 1)
     {
@@ -511,12 +513,12 @@ struct UnitInfo
   {
     u16 class_type;
     UnitType unit_type;
-    
+
     if (unit_type == UnitType::UNIT_TYPE_DEAD_WALDO)
     {
       std::print("Found Waldo!");
     }
-    
+
     u16 hash_id;
     UnitFlags flags;
     Point pixel_position;
@@ -676,19 +678,19 @@ struct AiPlayer
   TeamIndex16 target_team;
   AiMapList map_list;
   u16 has_info_map;
-  
+
   if (has_info_map)
   {
   	u8 info_map[12544];
   }
-  
+
   u16 has_mine_map;
-  
+
   if (has_mine_map)
   {
     u8 mine_map[12544];
   }
-  
+
   Point target_location;
 };
 
@@ -720,7 +722,7 @@ fn CheckObjectId(u16 index, bool caller)
   	last_object_index = index;
   	result = true;
   }
-  
+
   return result;
 };
 
@@ -801,7 +803,7 @@ struct SaveFile
   MessageLogList message_log_green;
   MessageLogList message_log_blue;
   MessageLogList message_log_gray;
-  
+
   if (team_type_red == TeamType::Computer)
   {
     AiPlayer ai_player_red;

@@ -1,6 +1,8 @@
+#pragma description MP3 ID3 tags
+
 #pragma MIME audio/mpeg
 
-#include <std/mem.pat>
+import std.mem;
 
 namespace v1 {
 
@@ -24,10 +26,10 @@ namespace v2 {
         u8 bytes[4];
     } [[sealed, static, format("v2::ssi_value"), transform("v2::ssi_value")]];
 
-    fn ssi_value(ref SyncSafeInt n) {
+    fn ssi_value(ref SyncSafeInt size) {
         u32 result = 0;
         for (u8 i = 0, i < 4, i = i + 1) {
-            u8 byteval = n.bytes[i] & 0x7F;
+            u8 byteval = size.bytes[i] & 0x7F;
             u8 shift = 7 * (4 - i - 1);
             result = result | (byteval << shift);
         }
@@ -38,7 +40,7 @@ namespace v2 {
         u8 major;
         u8 revision;
     };
-    
+
     bitfield TagHeaderFlags {
         unsynchronized : 1;
         extended       : 1;
@@ -46,14 +48,14 @@ namespace v2 {
         footer         : 1;
         padding        : 4;
     };
-    
+
     struct TagHeader {
         char           identifier[3];
         TagVersion     version;
         TagHeaderFlags flags;
         SyncSafeInt    size;
     } [[static]];
-    
+
     bitfield ExtendedFlag {
         padding      : 1;
         update       : 1;
@@ -68,14 +70,14 @@ namespace v2 {
         ExtendedFlag flags[nflagbytes];
         u8           data[size];
     };
-    
+
     struct TagFooter {
         char           identifier[3];
         TagVersion     version;
         TagHeaderFlags flags;
         SyncSafeInt    size;
     } [[static]];
-    
+
     bitfield FrameFlags {
         padding               : 1;
         tagalterpreservation  : 1;
@@ -121,7 +123,7 @@ namespace v2 {
     };
 
     }
-    
+
     struct Frame {
         FrameId     id;
         SyncSafeInt size;

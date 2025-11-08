@@ -1,9 +1,12 @@
+#pragma description SE Linux package
+
 // SE Linux Policy Package
 // Extension: PP
 // https://github.com/SELinuxProject/selinux/blob/master/libsepol/src/module.c
 
+#pragma magic [ 8F FF 7C F9 ] @ 0x00
 #pragma endian little
-#include <std/sys.pat>
+import std.sys;
 
 enum section_types : u32 {
     file_context = 0xf97cff90,

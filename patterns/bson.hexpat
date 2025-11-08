@@ -1,6 +1,10 @@
+#pragma author WerWolv
+#pragma description BSON (Binary JSON)
+
 #pragma MIME application/bson
 
-#include <type/time.pat>
+import std.mem;
+import type.time;
 
 enum Type : u8 {
     Double              = 0x01,
@@ -22,8 +26,8 @@ enum Type : u8 {
     Timestamp           = 0x11,
     Int64               = 0x12,
     Decimal128          = 0x13,
-    
-    MinKey              = 0xFF, 
+
+    MinKey              = 0xFF,
     MaxKey              = 0x7F
 };
 
@@ -74,9 +78,9 @@ using Document;
 
 struct Element {
     Type type;
-    
+
     CString name;
-    
+
     if (type == Type::Double) {
         double value;
     } else if (type == Type::String) {
@@ -89,9 +93,9 @@ struct Element {
         Binary value;
     } else if (type == Type::Undefined) {
         /* undefined */
-    } else if (type == Type::ObjectId) { 
+    } else if (type == Type::ObjectId) {
         ObjectId value;
-    } else if (type == Type::Boolean) { 
+    } else if (type == Type::Boolean) {
         bool value;
     } else if (type == Type::UTCDatetime) {
         type::time64_t value;
@@ -125,4 +129,4 @@ struct Document {
     padding[1];
 };
 
-Document document @ 0x00;
+Document documents[while(!std::mem::eof())] @ 0x00 [[inline]];

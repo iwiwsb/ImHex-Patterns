@@ -1,3 +1,5 @@
+#pragma description Qubicle voxel scene project
+
 // Qubicle QBCL format
 
 struct String {

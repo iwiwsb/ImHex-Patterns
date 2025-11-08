@@ -1,4 +1,6 @@
-#include <std/core.pat>
+#pragma description MIDI Musical Instrument Digital Interface
+
+import std.core;
 
 #pragma MIME audio/midi
 #pragma endian big

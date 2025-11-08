@@ -1,13 +1,30 @@
 #pragma once
 
-#include <std/sys.pat>
+import std.sys;
+import std.core;
 
 /*!
     The array library contains a helper type to make it easier to create multi-dimensional arrays
     and pass arrays to functions as parameters.
+
+    ## Multi-dimensional arrays
+
+    The following example shows how to use multi-dimensional arrays with structs.
+
+    ```rust
+    import std.array;
+
+    struct File {
+        u8 width, height;
+        std::Array<std::Array<u8, parent.width>, height> cells;
+    };
+
+    File file @ 0x00;
+    ```
+
 */
 
-namespace std {
+namespace auto std {
 
     /**
         Simple one dimensional array wrapper
@@ -26,9 +43,19 @@ namespace std {
     struct ByteSizedArray<T, auto NumBytes> {
         u64 startAddress = $;
         T array[while($ - startAddress < NumBytes)] [[inline]];
-        
+
         std::assert($ - startAddress == NumBytes, "Not enough bytes available to fit a whole number of types");
     } [[format("std::impl::format_array")]];
+
+
+    /**
+        An interface type for getting the index of the currently processed element in an array. This is a nice wrapper around `std::core::array_index()`
+
+        To use it, inherit from it and use the `this.index` field to get the index of the current element
+    */
+    struct IIndexed {
+        const u64 index = std::core::array_index();
+    };
 
     namespace impl {
 

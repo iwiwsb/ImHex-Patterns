@@ -1,7 +1,9 @@
+#pragma description Truevision TGA/TARGA image
+
 #pragma MIME image/tga
 #pragma endian little
 
-#include <std/mem.pat>
+import std.mem;
 
 struct ColorMapSpec {
   u16 entryIndex;
@@ -59,7 +61,7 @@ struct Header {
   ColorMapSpec colorMapSpec;
   ImageSpec    imageSpec;
   char         imageId[idLength];
-  
+
   if (colorMapType == ColorMapType::ColorPalette) {
     u8 colorMapData[GetColorMapDataSize(colorMapSpec)];
   }

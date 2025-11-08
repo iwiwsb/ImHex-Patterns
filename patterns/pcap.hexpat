@@ -1,4 +1,6 @@
-#include <std/mem.pat>
+#pragma description pcap header and packets
+
+import std.mem;
 #pragma MIME application/vnd.tcpdump.pcap
 
 enum network_type : u32 {

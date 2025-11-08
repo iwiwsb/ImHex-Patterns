@@ -1,6 +1,8 @@
-#include <std/ptr.pat>
-#include <std/mem.pat>
-#include <std/sys.pat>
+#pragma description GoldSrc engine map (Half-Life 1)
+
+import std.ptr;
+import std.mem;
+import std.sys;
 
 #pragma endian little
 
@@ -161,7 +163,7 @@ struct dmiptexlump_t
 	MiptexPointer dataofs[nummiptex];
 };
 
-struct VisibilityData 
+struct VisibilityData
 {
 	u8 data[file_header.lumps[LumpIndex::Visibility].filelen];
 	u8 pad[std::mem::align_to(4, sizeof(this)) - sizeof(this)];

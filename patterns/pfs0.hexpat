@@ -1,7 +1,11 @@
-#include <type/magic.pat>
-#include <type/size.pat>
+#pragma author WerWolv
+#pragma description Nintendo Switch PFS0 archive (.nsp)
+#pragma magic [ 50 46 53 30 ] @ 0x00
 
-#include <std/core.pat>
+import type.magic;
+import type.size;
+
+import std.core;
 
 struct FileEntry {
     u64 dataOffset;
@@ -19,7 +23,7 @@ struct Header {
     u32 numFiles;
     type::Size<u32> stringTableSize;
     padding[4];
-    
+
     FileEntry fileEntryTable[numFiles];
     String strings[numFiles];
 };
@@ -30,8 +34,8 @@ struct File {
 };
 
 struct PFS0 {
-    Header header; 
-    
+    Header header;
+
     File files[header.numFiles];
 };
 
