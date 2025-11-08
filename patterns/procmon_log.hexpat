@@ -23,6 +23,24 @@ struct StringsArray {
     String strings[num_of_strings]; 
 };
 
+struct Module {
+    u32 unknown;
+    u64 base_address;
+    u32 size_of_module;
+    u32 image_path_str_index;
+    u32 version_str_index;
+    u32 company_str_index;
+    u32 description_str_index;
+    u32 timestamp;
+};
+
+struct ProcessesArray {
+    u32 number_of_elements;
+    u32 indexes_array[number_of_elements];
+    u32 relative_offsets[number_of_elements];
+    Process processes[number_of_elements];
+};
+
 struct Process {
     u32 index;
     u32 pid;
@@ -47,24 +65,6 @@ struct Process {
     u32 unknown;
     u32 num_of_modules;
     Module modules[num_of_modules];
-};
-
-struct Module {
-    u32 unknown;
-    u64 base_address;
-    u32 size_of_module;
-    u32 image_path_str_index;
-    u32 version_str_index;
-    u32 company_str_index;
-    u32 description_str_index;
-    u32 timestamp;
-};
-
-struct ProcessesArray {
-    u32 number_of_elements;
-    u32 indexes_array[number_of_elements];
-    u32 relative_offsets[number_of_elements];
-    Process processes[number_of_elements];
 };
 
 char             magic[4]                       @ 0x0000;
